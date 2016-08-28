@@ -1,8 +1,12 @@
 package ru.izebit.model
 
+import ru.izebit.model.Relation.Type
+
 /**
   * Created by Artem Konovalov on 8/28/16.
   */
+case class Relation(id: String, var relationType: Type)
+
 object Relation {
 
   trait Type

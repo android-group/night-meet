@@ -3,8 +3,8 @@ package ru.izebit.service
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.izebit.dao.AccountDao
-import ru.izebit.model.Relation.Type
-import ru.izebit.model.{Account, Sex}
+import ru.izebit.model.Relation.{LIKE, Type}
+import ru.izebit.model.{Account, Relation, Sex}
 
 
 @Component
@@ -13,13 +13,30 @@ class AccountService {
   private var accountDao: AccountDao = _
 
 
-  def getSympathies(currentId: String, value: Type): Iterable[String] = {
-    ???
-  }
+  def getRelations(currentId: String, relationType: Type): List[String] =
+    accountDao
+      .getAccount(currentId)
+      .relations
+      .filter(e => e.relationType == relationType)
+      .map(e => e.id)
 
-  def changeStatus(currentId: String, otherId: String, relationType: Type): Boolean = {
-    ???
 
+  def changeStatus(id: String, otherId: String, relationType: Type): Boolean = {
+    //получить или добавить relations
+    val account = accountDao.getAccount(id)
+    val relation = account.relations.view.find(e => e.id == otherId).head
+    relation match {
+      case x@Relation(_, LIKE) =>
+
+
+      case null =>
+
+    }
+
+
+
+
+    true
   }
 
   def getCandidates(id: String, count: Int): Iterable[String] = {

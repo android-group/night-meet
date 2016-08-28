@@ -42,7 +42,7 @@ class BaseController {
     try {
 
       val result = accountService.getCandidates(id, count)
-      response.put("result", new JSONArray(result))
+      response.put("result", new JSONArray(result.toList))
 
     } catch {
       case e: _ =>
@@ -77,15 +77,15 @@ class BaseController {
   }
 
   @RequestMapping(value = Array("/account/{id}/relations/{type}"), method = Array(RequestMethod.GET))
-  def getSympathies(@PathVariable(value = "id") currentId: String,
-                    @PathVariable(value = "type") relationType: Int): String = {
+  def getRelations(@PathVariable(value = "id") currentId: String,
+                   @PathVariable(value = "type") relationType: Int): String = {
 
 
     val response = new JSONObject()
 
     try {
 
-      val result = accountService.getSympathies(currentId, Relation.get(relationType))
+      val result = accountService.getRelations(currentId, Relation.get(relationType))
       response.put("result", new JSONArray(result))
 
     } catch {

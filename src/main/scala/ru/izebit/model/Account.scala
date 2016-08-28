@@ -8,4 +8,5 @@ import ru.izebit.model.Sex.Type
 case class Account(id: String, sex: Type, city: Int) extends Serializable {
   //todo сделать похитрее
   var offset: Int = 0
+  var relations = List[Relation]()
 }
