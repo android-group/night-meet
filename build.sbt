@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
 
   "com.github.fakemongo" % "fongo" % "2.0.6" % "test",
   "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-all" % "2.0.2-beta" % "test",
+  "org.mockito" % "mockito-all" % "1.8.4" % "test",
   "org.scalatest" % "scalatest_2.11" % "3.0.0" % "test",
   "org.springframework" % "spring-test" % "4.3.2.RELEASE" % "test"
 
