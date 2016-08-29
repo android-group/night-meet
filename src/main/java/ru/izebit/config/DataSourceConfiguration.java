@@ -8,6 +8,7 @@ import com.mongodb.ServerAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.MongoDbFactory;
@@ -18,6 +19,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.singletonList;
+import static ru.izebit.config.BaseConfiguration.Profile.DEVELOPMENT;
 
 /**
  * Created by Artem Konovalov on 8/28/16.
@@ -42,6 +44,7 @@ public class DataSourceConfiguration {
     }
 
     @Bean
+    @Profile(DEVELOPMENT)
     public MongoClient mongoClient() throws UnknownHostException {
         Builder builder = MongoClientOptions
                 .builder()

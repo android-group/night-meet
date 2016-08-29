@@ -13,15 +13,15 @@ object Relation {
 
   case object LIKE extends Type
 
-  case object HATE extends Type
+  case object CONNECT extends Type
 
-  case object VIEW extends Type
+  case object VIEWED extends Type
 
 
   def get(relationType: Int): Type = relationType match {
     case 1 => LIKE
-    case 2 => HATE
-    case 3 => VIEW
+    case 2 => CONNECT
+    case 3 => VIEWED
     case _ => throw new IllegalArgumentException(s"$relationType is not valid value")
   }
 }

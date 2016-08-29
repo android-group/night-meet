@@ -24,7 +24,7 @@ class BaseController {
       response.put("result", "ok")
 
     } catch {
-      case e: _ =>
+      case e: Exception =>
         response.put("result", "error")
         response.put("description", s"internal error: ${e.getMessage}")
     }
@@ -42,10 +42,10 @@ class BaseController {
     try {
 
       val result = accountService.getCandidates(id, count)
-      response.put("result", new JSONArray(result.toList))
+      response.put("result", new JSONArray(result))
 
     } catch {
-      case e: _ =>
+      case e: Exception =>
         response.put("result", "error")
         response.put("description", s"internal error: ${e.getMessage}")
     }
@@ -68,9 +68,9 @@ class BaseController {
       case e: IllegalArgumentException =>
         response.put("result", "error")
         response.put("description", s"bad params: ${e.getMessage}")
-      case _ =>
+      case e: Exception =>
         response.put("result", "error")
-        response.put("description", "internal error")
+        response.put("description", s"internal error: ${e.getMessage}")
     }
 
     response.toString
@@ -92,9 +92,9 @@ class BaseController {
       case e: IllegalArgumentException =>
         response.put("result", "error")
         response.put("description", s"bad params: ${e.getMessage}")
-      case _ =>
+      case e: Exception =>
         response.put("result", "error")
-        response.put("description", "internal error")
+        response.put("description", s"internal error: ${e.getMessage}")
     }
 
     response.toString
