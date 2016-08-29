@@ -5,11 +5,23 @@ package ru.izebit.model
   */
 object Sex {
 
-  trait Type
+  trait Type {
+    val name: String
 
-  object MALE extends Type
 
-  object FEMALE extends Type
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case x: Type => this.name == x.name
+      case _ => false
+    }
+  }
+
+  object MALE extends Type {
+    override val name: String = "male"
+  }
+
+  object FEMALE extends Type {
+    override val name: String = "female"
+  }
 
 
   def get(order: Int) = order match {

@@ -1,5 +1,7 @@
 package ru.izebit.contoller
 
+import java.util
+
 import org.json.{JSONArray, JSONObject}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation._
@@ -42,7 +44,7 @@ class BaseController {
     try {
 
       val result = accountService.getCandidates(id, count)
-      response.put("result", new JSONArray(result))
+      response.put("result", new JSONArray(result.asInstanceOf[util.Collection[Object]]))
 
     } catch {
       case e: Exception =>
@@ -85,8 +87,9 @@ class BaseController {
 
     try {
 
-      val result = accountService.getRelations(currentId, Relation.get(relationType))
-      response.put("result", new JSONArray(result))
+      val result: List[String] = accountService.getRelations(currentId, Relation.get(relationType))
+      val ids = result.foldRight(new JSONArray())((id, array) => array.put(id))
+      response.put("result", ids)
 
     } catch {
       case e: IllegalArgumentException =>
