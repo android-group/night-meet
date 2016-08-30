@@ -32,4 +32,17 @@ class SocialNetworkProvider {
     val response = new JSONObject(content).getJSONObject("response")
     (response.getInt("city"), Sex.get(response.getInt("sex")))
   }
+
+  /**
+    * поиск рандомных анкет из соцсети
+    *
+    * @param city  город
+    * @param sex   пол
+    * @param count количество
+    * @return список id
+    */
+  def search(city: Int, sex: Sex.Type, count: Int): List[String] = {
+    //todo выборка из соцсети, подумать как лучше сделать
+    ???
+  }
 }

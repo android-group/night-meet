@@ -9,19 +9,39 @@ case class Relation(id: String, var relationType: Type)
 
 object Relation {
 
-  trait Type
+  trait Type {
+    val name: String
 
-  case object LIKE extends Type
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case x: Type => name == x.name
+      case _ => false
+    }
 
-  case object CONNECT extends Type
 
-  case object VIEWED extends Type
+    def prev() = this match {
+      case CONNECT => LIKE
+      case VIEWED => CONNECT
+      case LIKE => null
+    }
+  }
 
+  case object LIKE extends Type {
+    override val name: String = "like"
+  }
 
-  def get(relationType: Int): Type = relationType match {
+  case object CONNECT extends Type {
+    override val name: String = "connect"
+  }
+
+  case object VIEWED extends Type {
+    override val name: String = "viewed"
+  }
+
+  def getType(relationType: Int): Type = relationType match {
     case 1 => LIKE
     case 2 => CONNECT
     case 3 => VIEWED
     case _ => throw new IllegalArgumentException(s"$relationType is not valid value")
   }
+
 }

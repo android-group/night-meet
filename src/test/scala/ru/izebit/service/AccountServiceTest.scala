@@ -1,6 +1,5 @@
 package ru.izebit.service
 
-import org.junit.After
 import org.mockito.Mockito._
 import org.scalatest.FunSuite
 import org.scalatest.mockito.MockitoSugar
@@ -9,8 +8,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader
 import org.springframework.test.context.{ContextConfiguration, TestContextManager}
 import ru.izebit.config.BaseConfiguration
 import ru.izebit.dao.{AccountDao, SympathyDao}
-import ru.izebit.model.Sex.MALE
-import ru.izebit.model.{Account, Relation}
+import ru.izebit.model.Account
+import ru.izebit.model.Relation.{CONNECT, LIKE, VIEWED}
+import ru.izebit.model.Sex.{FEMALE, MALE}
 
 
 /**
@@ -31,14 +31,15 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   @Autowired
   var sympathyDao: SympathyDao = _
 
-  @After
-  def dropAll(): Unit = {
+  def dropAll() = {
     accountDao.dropAll()
     sympathyDao.dropAll()
   }
 
 
   test("add new account") {
+    dropAll()
+
     val id = "1"
     val city = 2
     val sex = MALE
@@ -57,7 +58,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(account.relations.isEmpty)
 
 
-    val relations = accountService.getRelations(id, Relation.LIKE)
+    val relations = accountService.getRelations(id, LIKE)
     assert(relations.isEmpty)
 
 
@@ -71,6 +72,8 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   }
 
   test("add old account") {
+    dropAll()
+
     val id = "1"
     val firstCity = 2
     val sex = MALE
@@ -88,7 +91,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(account.city == firstCity)
     assert(account.relations.isEmpty)
 
-    val relations = accountService.getRelations(id, Relation.LIKE)
+    val relations = accountService.getRelations(id, LIKE)
     assert(relations.isEmpty)
 
     var peoples = accountDao.getAllFrom(accountService.getSearchTableName(firstCity, sex))
@@ -97,7 +100,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val otherId = "42"
     accountDao.insertAccount(Account(otherId, MALE, 10))
-    accountService.changeStatus(otherId, id, Relation.LIKE)
+    accountService.changeStatus(otherId, id, LIKE)
     var sympathy = sympathyDao.get(id)
     assert(sympathy.lovers.size == 1)
     assert(sympathy.lovers.contains(otherId))
@@ -127,5 +130,202 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     sympathy = sympathyDao.get(id)
     assert(sympathy == null)
+  }
+
+
+  test("get candidates when sympathy is empty") {
+    dropAll()
+
+    val city = 1
+    val account = Account("1", MALE, city)
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", FEMALE, city)
+    val thirdAcc = Account("4", FEMALE, city)
+
+    val fourthAcc = Account("5", MALE, city)
+    val fifthAcc = Account("6", FEMALE, city + 1)
+
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(account, firstAcc, secondAcc, thirdAcc, fourthAcc, fifthAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    val candidates = accountService.getCandidates(account.id, 10)
+    assert(candidates.size == 3)
+    assert(candidates.contains(firstAcc.id))
+    assert(candidates.contains(secondAcc.id))
+    assert(candidates.contains(thirdAcc.id))
+
+    assert(accountDao.getAccount(account.id).offset == 3)
+  }
+
+
+
+  test("get candidates with padding when sympathy is empty") {
+    dropAll()
+
+    val city = 1
+    val account = Account("1", MALE, city)
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", FEMALE, city)
+    val thirdAcc = Account("4", FEMALE, city)
+
+    val fourthAcc = Account("5", MALE, city)
+    val fifthAcc = Account("6", FEMALE, city + 1)
+
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(account, firstAcc, secondAcc, thirdAcc, fourthAcc, fifthAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    var candidates = accountService.getCandidates(account.id, 1)
+    assert(candidates.size == 1)
+    assert(candidates.contains(firstAcc.id))
+    assert(accountDao.getAccount(account.id).offset == 1)
+
+    candidates = accountService.getCandidates(account.id, 2)
+    assert(candidates.size == 2)
+    assert(candidates.contains(secondAcc.id))
+    assert(candidates.contains(thirdAcc.id))
+    assert(accountDao.getAccount(account.id).offset == 3)
+  }
+
+
+  test("get candidates with padding when sympathy is not empty") {
+    dropAll()
+
+    val city = 1
+    val account = Account("1", MALE, city)
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", FEMALE, city)
+    val thirdAcc = Account("4", FEMALE, city)
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(account, firstAcc, secondAcc, thirdAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    accountService.changeStatus(thirdAcc.id, account.id, LIKE)
+
+    val candidates = accountService.getCandidates(account.id, 2)
+    assert(candidates.size == 2)
+    assert(candidates.contains(firstAcc.id))
+    assert(candidates.contains(thirdAcc.id))
+    assert(accountDao.getAccount(account.id).offset == 1)
+  }
+
+  test("get candidates with padding") {
+    dropAll()
+
+    val city = 1
+    val account = Account("1", MALE, city)
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", FEMALE, city)
+    val thirdAcc = Account("4", FEMALE, city)
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(account, firstAcc, secondAcc, thirdAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    account.offset = 1
+    accountDao.insertAccount(account)
+
+    val candidates = accountService.getCandidates(account.id, 10)
+    assert(candidates.size == 3)
+    assert(candidates.contains(firstAcc.id))
+    assert(candidates.contains(secondAcc.id))
+    assert(candidates.contains(thirdAcc.id))
+    assert(accountDao.getAccount(account.id).offset == candidates.size)
+  }
+
+  test("change status like and connect") {
+    dropAll()
+
+    val city = 1
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", MALE, city)
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(firstAcc, secondAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    accountService.changeStatus(firstAcc.id, secondAcc.id, LIKE)
+    var relations = accountService.getRelations(firstAcc.id, LIKE)
+    assert(relations.size == 1)
+    assert(relations.contains(secondAcc.id))
+
+    var sympathy = sympathyDao.get(secondAcc.id)
+    assert(sympathy != null)
+    assert(sympathy.lovers.contains(firstAcc.id))
+
+
+    accountService.changeStatus(secondAcc.id, firstAcc.id, LIKE)
+    relations = accountService.getRelations(firstAcc.id, LIKE)
+    assert(relations.isEmpty)
+    relations = accountService.getRelations(firstAcc.id, CONNECT)
+    assert(relations.size == 1)
+    assert(relations.contains(secondAcc.id))
+
+    sympathy = sympathyDao.get(firstAcc.id)
+    assert(sympathy == null)
+
+    relations = accountService.getRelations(secondAcc.id, CONNECT)
+    assert(relations.size == 1)
+    assert(relations.contains(firstAcc.id))
+  }
+
+  test("change status view") {
+    dropAll()
+
+    val city = 1
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", MALE, city)
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(firstAcc, secondAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    accountService.changeStatus(firstAcc.id, secondAcc.id, VIEWED)
+    var relations = accountService.getRelations(firstAcc.id, VIEWED)
+    assert(relations.isEmpty)
+    accountService.changeStatus(firstAcc.id, firstAcc.id, CONNECT)
+    relations = accountService.getRelations(firstAcc.id, CONNECT)
+    assert(relations.isEmpty)
+
+    accountService.changeStatus(secondAcc.id, firstAcc.id, LIKE)
+    accountService.changeStatus(secondAcc.id, firstAcc.id, CONNECT)
+    relations = accountService.getRelations(secondAcc.id, CONNECT)
+    assert(relations.size == 1)
+    assert(relations.contains(firstAcc.id))
+
+    accountService.changeStatus(secondAcc.id, firstAcc.id, VIEWED)
+    relations = accountService.getRelations(secondAcc.id, CONNECT)
+    assert(relations.isEmpty)
+    relations = accountService.getRelations(secondAcc.id, VIEWED)
+    assert(relations.size == 1)
+    assert(relations.contains(firstAcc.id))
   }
 }

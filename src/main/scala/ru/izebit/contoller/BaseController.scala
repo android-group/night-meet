@@ -1,7 +1,5 @@
 package ru.izebit.contoller
 
-import java.util
-
 import org.json.{JSONArray, JSONObject}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation._
@@ -43,8 +41,9 @@ class BaseController {
 
     try {
 
-      val result = accountService.getCandidates(id, count)
-      response.put("result", new JSONArray(result.asInstanceOf[util.Collection[Object]]))
+      val ids = accountService.getCandidates(id, count)
+      val candidates = ids.foldRight(new JSONArray())((id, array) => array.put(id))
+      response.put("result", candidates)
 
     } catch {
       case e: Exception =>
@@ -58,12 +57,12 @@ class BaseController {
   @RequestMapping(value = Array("/account/{id}/relations/{other_id}/{type}"), method = Array(RequestMethod.PUT))
   def changeStatus(@PathVariable(value = "id") currentId: String,
                    @PathVariable(value = "other_id") otherId: String,
-                   @PathVariable(value = "type") relationType: Int): String = {
+                   @PathVariable(value = "type") relationNumber: Int): String = {
 
     val response = new JSONObject()
 
     try {
-      val result = accountService.changeStatus(currentId, otherId, Relation.get(relationType))
+      val result = accountService.changeStatus(currentId, otherId, Relation.getType(relationNumber))
       response.put("result", if (result) "ok" else "error")
 
     } catch {
@@ -87,7 +86,7 @@ class BaseController {
 
     try {
 
-      val result: List[String] = accountService.getRelations(currentId, Relation.get(relationType))
+      val result: List[String] = accountService.getRelations(currentId, Relation.getType(relationType))
       val ids = result.foldRight(new JSONArray())((id, array) => array.put(id))
       response.put("result", ids)
 

@@ -3,8 +3,8 @@ package ru.izebit.service
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.izebit.dao.{AccountDao, SympathyDao}
-import ru.izebit.model.Relation.{CONNECT, LIKE, Type}
-import ru.izebit.model.{Account, Relation, Sex, Sympathy}
+import ru.izebit.model.Relation.{CONNECT, LIKE, Type, VIEWED}
+import ru.izebit.model._
 
 
 @Component
@@ -24,7 +24,7 @@ class AccountService {
       .map(e => e.id)
 
   def changeStatus(id: String, otherId: String, relationType: Type): Boolean = relationType match {
-    case LIKE => {
+    case LIKE =>
       val account = accountDao.getAccount(id)
       val otherAccount = accountDao.getAccount(otherId)
 
@@ -50,10 +50,20 @@ class AccountService {
       accountDao.insertAccount(account)
 
       true
-    }
+    case relationType@(VIEWED | CONNECT) =>
+      val account = accountDao.getAccount(id)
+      val relation = account.relations.find(r => r.relationType == relationType.prev() && r.id == otherId)
+      if (relation.isDefined) {
+        relation.get.relationType = relationType
+        accountDao.insertAccount(account)
+
+        true
+      }
+      else
+        false
   }
 
-  def getCandidates(id: String, count: Int): java.util.List[String] = {
+  def getCandidates(id: String, count: Int): List[String] = {
     ???
   }
 
