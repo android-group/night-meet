@@ -68,7 +68,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
 
     val sympathies = sympathyDao.get(id)
-    assert(sympathies == null)
+    assert(sympathies.lovers.isEmpty)
   }
 
   test("add old account") {
@@ -129,7 +129,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(peoples.head == id)
 
     sympathy = sympathyDao.get(id)
-    assert(sympathy == null)
+    assert(sympathy.lovers.isEmpty)
   }
 
 
@@ -315,7 +315,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(relations.contains(secondAcc.id))
 
     sympathy = sympathyDao.get(firstAcc.id)
-    assert(sympathy == null)
+    assert(sympathy.lovers.isEmpty)
 
     relations = accountService.getRelations(secondAcc.id, CONNECT)
     assert(relations.size == 1)

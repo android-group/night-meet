@@ -6,7 +6,7 @@ import org.bson.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.{Criteria, Query}
-import org.springframework.stereotype.{Component, Repository}
+import org.springframework.stereotype.Component
 import ru.izebit.model.Sympathy
 
 
@@ -35,7 +35,7 @@ class SympathyDao {
   def get(id: String): Sympathy = {
     val document = mongoTemplate.findById(id, classOf[Document], sympathyTableName)
 
-    if (document == null) null
+    if (document == null) Sympathy(id, Set.empty)
     else document.get("sympathy", classOf[Sympathy])
   }
 

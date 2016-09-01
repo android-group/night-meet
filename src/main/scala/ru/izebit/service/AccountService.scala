@@ -66,7 +66,7 @@ class AccountService {
   def getCandidates(id: String, count: Int): Set[String] = {
     val sympathy = sympathyDao.get(id)
     var candidates: Set[String] = Set()
-    if (sympathy != null && sympathy.lovers.nonEmpty) {
+    if (sympathy.lovers.nonEmpty) {
       if (sympathy.lovers.size > count) {
         candidates = sympathy.lovers.slice(0, count)
         sympathy.lovers = sympathy.lovers.slice(count + 1, sympathy.lovers.size)
