@@ -46,24 +46,27 @@ public class DataSourceConfiguration {
     @Bean
     @Profile(DEVELOPMENT)
     public MongoClient mongoClient() throws UnknownHostException {
-        Builder builder = MongoClientOptions
+        Builder optionBuilder = MongoClientOptions
                 .builder()
                 .connectTimeout(properties.getRequiredProperty("mongo.timeout", Integer.class))
                 .socketTimeout((int) TimeUnit.SECONDS.toMillis(60))
                 .socketKeepAlive(true)
                 .connectionsPerHost(8);
 
-        MongoCredential mongoCredential = MongoCredential.createPlainCredential(
-                properties.getProperty("mongo.username"),
-                properties.getProperty("mongo.database"),
-                properties.getProperty("mongo.password").toCharArray());
-
-
         ServerAddress serverAddress = new ServerAddress(
                 properties.getProperty("mongo.host"),
                 properties.getProperty("mongo.port", Integer.class));
 
-        return new MongoClient(serverAddress, singletonList(mongoCredential), builder.build());
-    }
+        boolean isAuthorized = properties.getProperty("mongo.auth", Boolean.class, Boolean.FALSE);
+        if (isAuthorized) {
+            MongoCredential mongoCredential = MongoCredential.createPlainCredential(
+                    properties.getProperty("mongo.username"),
+                    properties.getProperty("mongo.database"),
+                    properties.getProperty("mongo.password").toCharArray());
 
+            return new MongoClient(serverAddress, singletonList(mongoCredential), optionBuilder.build());
+        } else
+            return new MongoClient(serverAddress, optionBuilder.build());
+
+    }
 }

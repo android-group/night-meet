@@ -62,6 +62,8 @@ class BaseController {
     val response = new JSONObject()
 
     try {
+      require(currentId != otherId)
+
       val result = accountService.changeStatus(currentId, otherId, Relation.getType(relationNumber))
       response.put("result", if (result) "ok" else "error")
 

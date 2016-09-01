@@ -29,7 +29,7 @@ class SocialNetworkProvider {
         .connectTimeout(TIMEOUT)
         .execute().returnContent().asString()
 
-    val response = new JSONObject(content).getJSONObject("response")
+    val response = new JSONObject(content).getJSONArray("response").getJSONObject(0)
     (response.getInt("city"), Sex.get(response.getInt("sex")))
   }
 
