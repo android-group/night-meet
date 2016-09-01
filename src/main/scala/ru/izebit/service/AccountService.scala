@@ -63,8 +63,38 @@ class AccountService {
         false
   }
 
-  def getCandidates(id: String, count: Int): List[String] = {
-    ???
+  def getCandidates(id: String, count: Int): Set[String] = {
+    val sympathy = sympathyDao.get(id)
+    var candidates: Set[String] = Set()
+    if (sympathy != null && sympathy.lovers.nonEmpty) {
+      if (sympathy.lovers.size > count) {
+        candidates = sympathy.lovers.slice(0, count)
+        sympathy.lovers = sympathy.lovers.slice(count + 1, sympathy.lovers.size)
+      } else {
+        candidates = sympathy.lovers
+        sympathy.lovers = Set()
+      }
+
+      sympathyDao.insert(sympathy)
+    }
+
+    if (candidates.size == count)
+      return candidates
+
+    val account = accountDao.getAccount(id)
+    val (ids, offset) = accountDao
+      .getFromSearchTable(
+        getSearchTableName(account.city, Sex.getOpposite(account.sex)),
+        account.offset,
+        count - candidates.size)
+    if (ids.isEmpty)
+      return candidates
+
+    candidates = candidates ++ ids
+    account.offset = offset
+    accountDao.insertAccount(account)
+
+    candidates
   }
 
 

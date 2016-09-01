@@ -225,6 +225,35 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(accountDao.getAccount(account.id).offset == 1)
   }
 
+  test("get candidates when sympathy is has more") {
+    dropAll()
+
+    val city = 1
+    val account = Account("1", MALE, city)
+
+    val firstAcc = Account("2", FEMALE, city)
+    val secondAcc = Account("3", FEMALE, city)
+    val thirdAcc = Account("4", FEMALE, city)
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(account, firstAcc, secondAcc, thirdAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.addAccount(ac.id))
+
+    accountService.changeStatus(firstAcc.id, account.id, LIKE)
+    accountService.changeStatus(thirdAcc.id, account.id, LIKE)
+    accountService.changeStatus(secondAcc.id, account.id, LIKE)
+
+    val candidates = accountService.getCandidates(account.id, 2)
+
+    assert(candidates.size == 2)
+    assert(candidates.contains(firstAcc.id))
+    assert(candidates.contains(thirdAcc.id))
+    assert(accountDao.getAccount(account.id).offset == 0)
+  }
+
   test("get candidates with padding") {
     dropAll()
 

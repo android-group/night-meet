@@ -3,14 +3,15 @@ package ru.izebit.dao
 import java.util.function.Consumer
 
 import org.bson.Document
-import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.{Criteria, Query}
-import org.springframework.stereotype.Repository
+import org.springframework.stereotype.{Component, Repository}
 import ru.izebit.model.Account
 
-@Repository
+import scala.collection.mutable
+
+@Component
 class AccountDao {
 
 
@@ -57,4 +58,31 @@ class AccountDao {
 
   def insertToSearchTable(tableName: String, id: String) =
     mongoTemplate.insert(new Document("_id", id), tableName)
+
+
+  def getFromSearchTable(tableName: String, offset: Int, count: Int): (mutable.Set[String], Int) = {
+
+    val tableSize = mongoTemplate.count(new Query(), classOf[Document], tableName).asInstanceOf[Int]
+    if (tableSize < count)
+      (getCandidates(tableName, 0, tableSize), tableSize)
+    else if (count + offset <= tableSize)
+      (getCandidates(tableName, offset, count), offset + count)
+    else {
+      val size = offset + count - tableSize
+      (getCandidates(tableName, offset, tableSize) ++= getCandidates(tableName, 0, size), size)
+    }
+  }
+
+  private def getCandidates(tableName: String, offset: Int, count: Int): mutable.Set[String] = {
+    val query = new Query().skip(offset).limit(count)
+    val result = mongoTemplate.find(query, classOf[Document], tableName)
+
+    val candidates: mutable.Set[String] = mutable.Set()
+    val consumer: Consumer[Document] = new Consumer[Document] {
+      override def accept(doc: Document): Unit = candidates += doc.getString("_id")
+    }
+    result.forEach(consumer)
+
+    candidates
+  }
 }

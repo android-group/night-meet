@@ -6,11 +6,11 @@ import org.bson.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.{Criteria, Query}
-import org.springframework.stereotype.Repository
+import org.springframework.stereotype.{Component, Repository}
 import ru.izebit.model.Sympathy
 
 
-@Repository
+@Component
 class SympathyDao {
 
   private val sympathyTableName = "sympathies"
