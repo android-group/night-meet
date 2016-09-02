@@ -15,12 +15,12 @@ class BaseController {
 
 
   @RequestMapping(value = Array("/account/{id}"), method = Array(RequestMethod.POST))
-  def addAccount(@PathVariable(value = "id") id: String): String = {
+  def login(@PathVariable(value = "id") id: String): String = {
 
     val response = new JSONObject()
 
     try {
-      accountService.addAccount(id)
+      accountService.login(id)
       response.put("result", "ok")
 
     } catch {
@@ -43,7 +43,8 @@ class BaseController {
 
       val ids = accountService.getCandidates(id, count)
       val candidates = ids.foldRight(new JSONArray())((id, array) => array.put(id))
-      response.put("result", candidates)
+      response.put("result", "ok")
+      response.put("account_ids", candidates)
 
     } catch {
       case e: Exception =>
@@ -90,7 +91,8 @@ class BaseController {
 
       val result: List[String] = accountService.getRelations(currentId, Relation.getType(relationType))
       val ids = result.foldRight(new JSONArray())((id, array) => array.put(id))
-      response.put("result", ids)
+      response.put("result", "ok")
+      response.put("account_ids", ids)
 
     } catch {
       case e: IllegalArgumentException =>

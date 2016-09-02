@@ -98,7 +98,7 @@ class AccountService {
   }
 
 
-  def addAccount(id: String) = {
+  def login(id: String) = {
     val (city, sex) = socialNetworkProvider.getInfo(id)
     var account = accountDao.getAccount(id)
 

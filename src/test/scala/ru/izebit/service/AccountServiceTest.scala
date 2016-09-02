@@ -48,7 +48,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     when(socialNetworkProvider.getInfo(id)).thenReturn((city, sex))
     accountService.socialNetworkProvider = socialNetworkProvider
 
-    accountService.addAccount(id)
+    accountService.login(id)
 
     val account: Account = accountDao.getAccount(id)
 
@@ -82,7 +82,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     when(socialNetworkProvider.getInfo(id)).thenReturn((firstCity, sex))
     accountService.socialNetworkProvider = socialNetworkProvider
 
-    accountService.addAccount(id)
+    accountService.login(id)
 
     var account = accountDao.getAccount(id)
 
@@ -110,7 +110,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     socialNetworkProvider = mock[SocialNetworkProvider]
     accountService.socialNetworkProvider = socialNetworkProvider
     when(socialNetworkProvider.getInfo(id)).thenReturn((secondCity, sex))
-    accountService.addAccount(id)
+    accountService.login(id)
 
     account = accountDao.getAccount(id)
 
@@ -152,7 +152,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(account, firstAcc, secondAcc, thirdAcc, fourthAcc, fifthAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     val candidates = accountService.getCandidates(account.id, 10)
     assert(candidates.size == 3)
@@ -184,7 +184,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(account, firstAcc, secondAcc, thirdAcc, fourthAcc, fifthAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     var candidates = accountService.getCandidates(account.id, 1)
     assert(candidates.size == 1)
@@ -214,7 +214,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(account, firstAcc, secondAcc, thirdAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     accountService.changeStatus(thirdAcc.id, account.id, LIKE)
 
@@ -240,7 +240,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(account, firstAcc, secondAcc, thirdAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     accountService.changeStatus(firstAcc.id, account.id, LIKE)
     accountService.changeStatus(thirdAcc.id, account.id, LIKE)
@@ -269,7 +269,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(account, firstAcc, secondAcc, thirdAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     account.offset = 1
     accountDao.insertAccount(account)
@@ -295,7 +295,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(firstAcc, secondAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     accountService.changeStatus(firstAcc.id, secondAcc.id, LIKE)
     var relations = accountService.getRelations(firstAcc.id, LIKE)
@@ -335,7 +335,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val accounts = List(firstAcc, secondAcc)
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
-    accounts.foreach(ac => accountService.addAccount(ac.id))
+    accounts.foreach(ac => accountService.login(ac.id))
 
     accountService.changeStatus(firstAcc.id, secondAcc.id, VIEWED)
     var relations = accountService.getRelations(firstAcc.id, VIEWED)
