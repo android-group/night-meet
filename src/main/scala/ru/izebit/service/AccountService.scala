@@ -26,6 +26,9 @@ class AccountService {
   def changeStatus(id: String, otherId: String, relationType: Type): Boolean = relationType match {
     case LIKE =>
       val account = accountDao.getAccount(id)
+      if (isDuplicate(account, otherId, relationType))
+        return false
+
       val otherAccount = accountDao.getAccount(otherId)
 
       val relation = otherAccount.relations.find(r => r.relationType == LIKE && r.id == id)
@@ -52,6 +55,9 @@ class AccountService {
       true
     case relationType@(VIEWED | CONNECT) =>
       val account = accountDao.getAccount(id)
+      if (isDuplicate(account, otherId, relationType))
+        return false
+
       val relation = account.relations.find(r => r.relationType == relationType.prev() && r.id == otherId)
       if (relation.isDefined) {
         relation.get.relationType = relationType
@@ -61,6 +67,10 @@ class AccountService {
       }
       else
         false
+  }
+
+  def isDuplicate(account: Account, otherId: String, relationType: Relation.Type): Boolean = {
+    account.relations.exists(r => r.relationType == relationType && r.id == otherId)
   }
 
   def getCandidates(id: String, count: Int): Set[String] = {

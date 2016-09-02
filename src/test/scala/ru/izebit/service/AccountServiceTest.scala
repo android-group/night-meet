@@ -357,4 +357,28 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(relations.size == 1)
     assert(relations.contains(firstAcc.id))
   }
+
+
+
+  test("change status - duplication check") {
+
+    val city = 1
+
+    val firstAcc = Account("4", FEMALE, city)
+    val secondAcc = Account("5", MALE, city)
+
+    val socialNetworkProvider = mock[SocialNetworkProvider]
+    accountService.socialNetworkProvider = socialNetworkProvider
+
+    val accounts = List(firstAcc, secondAcc)
+    accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
+    accounts.foreach(ac => accountService.login(ac.id))
+
+    accountService.changeStatus(secondAcc.id, firstAcc.id, LIKE)
+    var relations = accountService.getRelations(secondAcc.id, LIKE)
+    assert(relations.size == 1)
+    accountService.changeStatus(secondAcc.id, firstAcc.id, LIKE)
+    relations = accountService.getRelations(secondAcc.id, LIKE)
+    assert(relations.size == 1)
+  }
 }
