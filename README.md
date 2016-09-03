@@ -39,7 +39,7 @@
      <td>/api/v1/account/{id}/relations/{type}</td>
      <td>получение отношений со статусом {type} для пользователя с идентификатором {id}</td>
      <td>{"result":"ok","account_ids":["first_id","second_id"]}</td>
-     <td>curl -X PUT http://localhost:8888/api/v1/account/{id}/relations/{type}</td>
+     <td>curl -X GET http://localhost:8888/api/v1/account/{id}/relations/{type}</td>
    </tr>
 </table>
 
