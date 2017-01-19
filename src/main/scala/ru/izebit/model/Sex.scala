@@ -16,11 +16,11 @@ object Sex {
   }
 
   object MALE extends Type {
-    override val name: String = "male"
+    override val name = "male"
   }
 
   object FEMALE extends Type {
-    override val name: String = "female"
+    override val name = "female"
   }
 
 

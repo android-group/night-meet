@@ -17,19 +17,12 @@ class BaseController {
   @RequestMapping(value = Array("/account/{id}"), method = Array(RequestMethod.POST))
   def login(@PathVariable(value = "id") id: String): String = {
 
-    val response = new JSONObject()
-
-    try {
-      accountService.login(id)
-      response.put("result", "ok")
-
-    } catch {
-      case e: Exception =>
-        response.put("result", "error")
-        response.put("description", s"internal error: ${e.getMessage}")
-    }
-
-    response.toString
+    responseWrapper(
+      response => {
+        accountService.login(id)
+        response.put("result", "ok")
+      }
+    )
   }
 
   @RequestMapping(value = Array("/account/{id}/candidates"), method = Array(RequestMethod.GET))
@@ -37,22 +30,13 @@ class BaseController {
                     @RequestParam(value = "count", defaultValue = "10") count: Int): String = {
 
 
-    val response = new JSONObject()
-
-    try {
-
-      val ids = accountService.getCandidates(id, count)
-      val candidates = ids.foldRight(new JSONArray())((id, array) => array.put(id))
-      response.put("result", "ok")
-      response.put("account_ids", candidates)
-
-    } catch {
-      case e: Exception =>
-        response.put("result", "error")
-        response.put("description", s"internal error: ${e.getMessage}")
-    }
-
-    response.toString
+    responseWrapper(
+      response => {
+        val ids = accountService.getCandidates(id, count)
+        val candidates = ids.foldRight(new JSONArray())((id, array) => array.put(id))
+        response.put("result", "ok")
+        response.put("account_ids", candidates)
+      })
   }
 
   @RequestMapping(value = Array("/account/{id}/relations/{other_id}/{type}"), method = Array(RequestMethod.PUT))
@@ -60,24 +44,14 @@ class BaseController {
                    @PathVariable(value = "other_id") otherId: String,
                    @PathVariable(value = "type") relationNumber: Int): String = {
 
-    val response = new JSONObject()
+    responseWrapper(
+      response => {
+        require(currentId != otherId)
 
-    try {
-      require(currentId != otherId)
-
-      val result = accountService.changeStatus(currentId, otherId, Relation.getType(relationNumber))
-      response.put("result", if (result) "ok" else "error")
-
-    } catch {
-      case e: IllegalArgumentException =>
-        response.put("result", "error")
-        response.put("description", s"bad params: ${e.getMessage}")
-      case e: Exception =>
-        response.put("result", "error")
-        response.put("description", s"internal error: ${e.getMessage}")
-    }
-
-    response.toString
+        val result = accountService.changeStatus(currentId, otherId, Relation.getType(relationNumber))
+        response.put("result", if (result) "ok" else "error")
+      }
+    )
   }
 
   @RequestMapping(value = Array("/account/{id}/relations/{type}"), method = Array(RequestMethod.GET))
@@ -85,14 +59,22 @@ class BaseController {
                    @PathVariable(value = "type") relationType: Int): String = {
 
 
+    responseWrapper(
+      response => {
+        val result: List[String] = accountService.getRelations(currentId, Relation.getType(relationType))
+        val ids = result.foldRight(new JSONArray())((id, array) => array.put(id))
+        response.put("result", "ok")
+        response.put("account_ids", ids)
+      }
+    )
+  }
+
+  private def responseWrapper(logic: JSONObject => Unit) = {
     val response = new JSONObject()
 
     try {
 
-      val result: List[String] = accountService.getRelations(currentId, Relation.getType(relationType))
-      val ids = result.foldRight(new JSONArray())((id, array) => array.put(id))
-      response.put("result", "ok")
-      response.put("account_ids", ids)
+      logic(response)
 
     } catch {
       case e: IllegalArgumentException =>
