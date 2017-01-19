@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.{Criteria, Query}
 import org.springframework.stereotype.Component
 import ru.izebit.model.Sympathy
-
+import scala.collection.JavaConversions._
 
 @Component
 class SympathyDao {
@@ -19,10 +19,7 @@ class SympathyDao {
   private var mongoTemplate: MongoTemplate = _
 
   def dropAll() = {
-    val consumer: Consumer[String] = new Consumer[String] {
-      override def accept(name: String): Unit = mongoTemplate.dropCollection(name)
-    }
-    mongoTemplate.getCollectionNames.forEach(consumer)
+    mongoTemplate.getCollectionNames.foreach(name => mongoTemplate.dropCollection(name))
   }
 
   def insert(sympathy: Sympathy) =
@@ -35,8 +32,10 @@ class SympathyDao {
   def get(id: String): Sympathy = {
     val document = mongoTemplate.findById(id, classOf[Document], sympathyTableName)
 
-    if (document == null) Sympathy(id, Set.empty)
-    else document.get("sympathy", classOf[Sympathy])
+    if (document == null)
+      Sympathy(id, Set.empty)
+    else
+      document.get("sympathy", classOf[Sympathy])
   }
 
   def removeFor(id: String) =

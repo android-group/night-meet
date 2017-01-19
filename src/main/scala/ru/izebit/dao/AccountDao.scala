@@ -1,7 +1,9 @@
 package ru.izebit.dao
 
+import java.util
 import java.util.function.Consumer
 
+import scala.collection.JavaConversions.{asScalaBuffer, asScalaSet}
 import org.bson.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -20,21 +22,12 @@ class AccountDao {
   @Autowired
   private var mongoTemplate: MongoTemplate = _
 
-  def dropAll() = {
-    val consumer: Consumer[String] = new Consumer[String] {
-      override def accept(name: String): Unit = mongoTemplate.dropCollection(name)
-    }
-    mongoTemplate.getCollectionNames.forEach(consumer)
+  def dropAll(): Unit = {
+    mongoTemplate.getCollectionNames.foreach(mongoTemplate.dropCollection)
   }
 
   def getAllFrom(tableName: String): List[String] = {
-    var result: List[String] = Nil
-    val consumer: Consumer[Document] = new Consumer[Document] {
-      override def accept(document: Document): Unit = result = document.getString("_id") :: result
-    }
-    mongoTemplate.findAll(classOf[Document], tableName).forEach(consumer)
-
-    result
+    mongoTemplate.findAll(classOf[Document], tableName).map(document => document.getString("_id")).toList
   }
 
 
@@ -42,8 +35,10 @@ class AccountDao {
     val document = mongoTemplate
       .findById(id, classOf[Document], userTableName)
 
-    if (document == null) null
-    else document.get("account", classOf[Account])
+    if (document == null)
+      null
+    else
+      document.get("account", classOf[Account])
   }
 
   def insertAccount(account: Account) =
@@ -75,14 +70,7 @@ class AccountDao {
 
   private def getCandidates(tableName: String, offset: Int, count: Int): mutable.Set[String] = {
     val query = new Query().skip(offset).limit(count)
-    val result = mongoTemplate.find(query, classOf[Document], tableName)
-
-    val candidates: mutable.Set[String] = mutable.Set()
-    val consumer: Consumer[Document] = new Consumer[Document] {
-      override def accept(doc: Document): Unit = candidates += doc.getString("_id")
-    }
-    result.forEach(consumer)
-
-    candidates
+    val result = new util.HashSet[Document](mongoTemplate.find(query, classOf[Document], tableName))
+    result.map(document => document.getString("_id"))
   }
 }
