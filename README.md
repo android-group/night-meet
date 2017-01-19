@@ -22,10 +22,10 @@
   </tr>
   <tr>
      <td>GET</td>
-     <td>/api/v1/account/{id}/candidates?count=<количество элементов></td>
+     <td>/api/v1/account/{id}/candidates?count=<количество элементов>&token=<токен авторизации в vk.com></td>
      <td>получение людей для просмотра. Если в списке людей нет, тогда получаю людей противоположного пола из моего города</td>
      <td>{"result":"ok","account_ids":["first_id","second_id"]}</td>
-     <td>curl -X GET http://localhost:8888/api/v1/account/{id}/candidates?count=<количество элементов></td>
+     <td>curl -X GET http://localhost:8888/api/v1/account/{id}/candidates?count=<количество элементов>&token=<токен авторизации в vk.com></td>
    </tr>
    <tr>
      <td>PUT</td>
@@ -45,20 +45,21 @@
 
 
 ### Дополнения:
-
-  
+ 
 виды отношений:
    - like (1) - односторонняя симпатия
    - connect (2) - взаимная симпатия
    - viewed (3) -  анкета была просмотрена текущим пользователем
 
 
-в случае ошибки ответ для всех методов будет следующий:
+**в случае ошибки, ответ для всех методов будет следующий:**
 
-    {
-      "result":"error",
-      "description":"описание ошибки"
-    }
+ ```json
+  {
+       "result":"error",
+       "description":"описание ошибки"
+  }
+ ```
 
    
 

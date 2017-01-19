@@ -136,6 +136,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   test("get candidates when sympathy is empty") {
     dropAll()
 
+    val token = "hello world"
     val city = 1
     val account = Account("1", MALE, city)
 
@@ -154,7 +155,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
     accounts.foreach(ac => accountService.login(ac.id))
 
-    val candidates = accountService.getCandidates(account.id, 10)
+    val candidates = accountService.getCandidates(account.id, 10, token)
     assert(candidates.size == 3)
     assert(candidates.contains(firstAcc.id))
     assert(candidates.contains(secondAcc.id))
@@ -168,6 +169,8 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   test("get candidates with padding when sympathy is empty") {
     dropAll()
 
+    val token = "hello world"
+
     val city = 1
     val account = Account("1", MALE, city)
 
@@ -186,12 +189,12 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
     accounts.foreach(ac => accountService.login(ac.id))
 
-    var candidates = accountService.getCandidates(account.id, 1)
+    var candidates = accountService.getCandidates(account.id, 1, token)
     assert(candidates.size == 1)
     assert(candidates.contains(firstAcc.id))
     assert(accountDao.getAccount(account.id).offset == 1)
 
-    candidates = accountService.getCandidates(account.id, 2)
+    candidates = accountService.getCandidates(account.id, 2, token)
     assert(candidates.size == 2)
     assert(candidates.contains(secondAcc.id))
     assert(candidates.contains(thirdAcc.id))
@@ -201,6 +204,8 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
   test("get candidates with padding when sympathy is not empty") {
     dropAll()
+
+    val token = "hello world"
 
     val city = 1
     val account = Account("1", MALE, city)
@@ -218,7 +223,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     accountService.changeStatus(thirdAcc.id, account.id, LIKE)
 
-    val candidates = accountService.getCandidates(account.id, 2)
+    val candidates = accountService.getCandidates(account.id, 2, token)
     assert(candidates.size == 2)
     assert(candidates.contains(firstAcc.id))
     assert(candidates.contains(thirdAcc.id))
@@ -228,6 +233,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   test("get candidates when sympathy is has more") {
     dropAll()
 
+    val token = "hello world"
     val city = 1
     val account = Account("1", MALE, city)
 
@@ -246,7 +252,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     accountService.changeStatus(thirdAcc.id, account.id, LIKE)
     accountService.changeStatus(secondAcc.id, account.id, LIKE)
 
-    val candidates = accountService.getCandidates(account.id, 2)
+    val candidates = accountService.getCandidates(account.id, 2, token)
 
     assert(candidates.size == 2)
     assert(candidates.contains(firstAcc.id))
@@ -257,6 +263,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   test("get candidates with padding") {
     dropAll()
 
+    val token = "hello world"
     val city = 1
     val account = Account("1", MALE, city)
 
@@ -274,7 +281,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     account.offset = 1
     accountDao.insertAccount(account)
 
-    val candidates = accountService.getCandidates(account.id, 10)
+    val candidates = accountService.getCandidates(account.id, 10, token)
     assert(candidates.size == 3)
     assert(candidates.contains(firstAcc.id))
     assert(candidates.contains(secondAcc.id))

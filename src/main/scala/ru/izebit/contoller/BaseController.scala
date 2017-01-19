@@ -27,12 +27,13 @@ class BaseController {
 
   @RequestMapping(value = Array("/account/{id}/candidates"), method = Array(RequestMethod.GET))
   def getCandidates(@PathVariable(value = "id") id: String,
+                    @RequestParam(value = "token") token: String,
                     @RequestParam(value = "count", defaultValue = "10") count: Int): String = {
 
 
     responseWrapper(
       response => {
-        val ids = accountService.getCandidates(id, count)
+        val ids = accountService.getCandidates(id, count, token)
         val candidates = ids.foldRight(new JSONArray())((id, array) => array.put(id))
         response.put("result", "ok")
         response.put("account_ids", candidates)

@@ -73,9 +73,10 @@ class AccountService {
     account.relations.exists(r => r.relationType == relationType && r.id == otherId)
   }
 
-  def getCandidates(id: String, count: Int): Set[String] = {
+  def getCandidates(id: String, count: Int, token: String): Set[String] = {
     val sympathy = sympathyDao.get(id)
-    var candidates: Set[String] = Set()
+    var candidates: Set[String] = Set.empty
+
     if (sympathy.lovers.nonEmpty) {
       if (sympathy.lovers.size > count) {
         candidates = sympathy.lovers.slice(0, count)
