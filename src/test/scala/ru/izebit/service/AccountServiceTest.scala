@@ -1,5 +1,6 @@
 package ru.izebit.service
 
+import org.mockito.Mockito
 import org.mockito.Mockito._
 import org.scalatest.FunSuite
 import org.scalatest.mockito.MockitoSugar
@@ -8,7 +9,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader
 import org.springframework.test.context.{ContextConfiguration, TestContextManager}
 import ru.izebit.config.BaseConfiguration
 import ru.izebit.dao.{AccountDao, SympathyDao}
-import ru.izebit.model.Account
+import ru.izebit.model.{Account, Sex}
 import ru.izebit.model.Relation.{CONNECT, LIKE, VIEWED}
 import ru.izebit.model.Sex.{FEMALE, MALE}
 
@@ -31,7 +32,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
   @Autowired
   var sympathyDao: SympathyDao = _
 
-  def dropAll() = {
+  private def dropAll() = {
     accountDao.dropAll()
     sympathyDao.dropAll()
   }
@@ -52,7 +53,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     val account: Account = accountDao.getAccount(id)
 
-    assert(account.offset == 0)
+    assert(account.internalOffset == 0)
     assert(account.sex == sex)
     assert(account.city == city)
     assert(account.relations.isEmpty)
@@ -86,7 +87,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     var account = accountDao.getAccount(id)
 
-    assert(account.offset == 0)
+    assert(account.internalOffset == 0)
     assert(account.sex == sex)
     assert(account.city == firstCity)
     assert(account.relations.isEmpty)
@@ -114,7 +115,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
 
     account = accountDao.getAccount(id)
 
-    assert(account.offset == 0)
+    assert(account.internalOffset == 0)
     assert(account.sex == sex)
     assert(account.city == secondCity)
     assert(account.relations.isEmpty)
@@ -161,7 +162,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(candidates.contains(secondAcc.id))
     assert(candidates.contains(thirdAcc.id))
 
-    assert(accountDao.getAccount(account.id).offset == 3)
+    assert(accountDao.getAccount(account.id).internalOffset == 3)
   }
 
 
@@ -192,13 +193,13 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     var candidates = accountService.getCandidates(account.id, 1, token)
     assert(candidates.size == 1)
     assert(candidates.contains(firstAcc.id))
-    assert(accountDao.getAccount(account.id).offset == 1)
+    assert(accountDao.getAccount(account.id).internalOffset == 1)
 
     candidates = accountService.getCandidates(account.id, 2, token)
     assert(candidates.size == 2)
     assert(candidates.contains(secondAcc.id))
     assert(candidates.contains(thirdAcc.id))
-    assert(accountDao.getAccount(account.id).offset == 3)
+    assert(accountDao.getAccount(account.id).internalOffset == 3)
   }
 
 
@@ -227,7 +228,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(candidates.size == 2)
     assert(candidates.contains(firstAcc.id))
     assert(candidates.contains(thirdAcc.id))
-    assert(accountDao.getAccount(account.id).offset == 1)
+    assert(accountDao.getAccount(account.id).internalOffset == 1)
   }
 
   test("get candidates when sympathy is has more") {
@@ -257,7 +258,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(candidates.size == 2)
     assert(candidates.contains(firstAcc.id))
     assert(candidates.contains(thirdAcc.id))
-    assert(accountDao.getAccount(account.id).offset == 0)
+    assert(accountDao.getAccount(account.id).internalOffset == 0)
   }
 
   test("get candidates with padding") {
@@ -278,7 +279,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     accounts.foreach(ac => when(socialNetworkProvider.getInfo(ac.id)).thenReturn((ac.city, ac.sex)))
     accounts.foreach(ac => accountService.login(ac.id))
 
-    account.offset = 1
+    account.internalOffset = 1
     accountDao.insertAccount(account)
 
     val candidates = accountService.getCandidates(account.id, 10, token)
@@ -286,7 +287,7 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     assert(candidates.contains(firstAcc.id))
     assert(candidates.contains(secondAcc.id))
     assert(candidates.contains(thirdAcc.id))
-    assert(accountDao.getAccount(account.id).offset == candidates.size)
+    assert(accountDao.getAccount(account.id).internalOffset == candidates.size)
   }
 
   test("change status like and connect") {

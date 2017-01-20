@@ -1,13 +1,12 @@
 package ru.izebit.dao
 
-import java.util.function.Consumer
-
 import org.bson.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.{Criteria, Query}
 import org.springframework.stereotype.Component
 import ru.izebit.model.Sympathy
+
 import scala.collection.JavaConversions._
 
 @Component
@@ -18,11 +17,11 @@ class SympathyDao {
   @Autowired
   private var mongoTemplate: MongoTemplate = _
 
-  def dropAll() = {
+  def dropAll(): Unit = {
     mongoTemplate.getCollectionNames.foreach(name => mongoTemplate.dropCollection(name))
   }
 
-  def insert(sympathy: Sympathy) =
+  def insert(sympathy: Sympathy): Unit =
     mongoTemplate.save(
       new Document()
         .append("_id", sympathy.id)
@@ -38,6 +37,6 @@ class SympathyDao {
       document.get("sympathy", classOf[Sympathy])
   }
 
-  def removeFor(id: String) =
+  def removeFor(id: String): Unit =
     mongoTemplate.remove(new Query().addCriteria(Criteria.where("_id").is(id)), sympathyTableName)
 }

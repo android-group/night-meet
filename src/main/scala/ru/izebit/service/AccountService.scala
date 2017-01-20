@@ -96,20 +96,32 @@ class AccountService {
     val (ids, offset) = accountDao
       .getFromSearchTable(
         getSearchTableName(account.city, Sex.getOpposite(account.sex)),
-        account.offset,
+        account.internalOffset,
         count - candidates.size)
     if (ids.isEmpty)
       return candidates
 
-    candidates = candidates ++ ids
-    account.offset = offset
+    candidates ++= ids
+    account.internalOffset = offset
+
+    if (candidates.size < count) {
+      val externalCount = count - candidates.size
+      //todo корявость
+      val ids =
+        Option(socialNetworkProvider.search(account.city, Sex.getOpposite(account.sex), externalCount, account.externalOffset, token))
+          .getOrElse(List.empty)
+
+      account.externalOffset = ids.size
+      candidates ++= ids
+    }
+
     accountDao.insertAccount(account)
 
     candidates
   }
 
 
-  def login(id: String) = {
+  def login(id: String): Unit = {
     val (city, sex) = socialNetworkProvider.getInfo(id)
     var account = accountDao.getAccount(id)
 
