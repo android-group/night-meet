@@ -25,7 +25,7 @@ class SocialNetworkProvider {
     * @param id идентификатор пользователя
     * @return номер города, пол
     */
-  def getInfo(id: String): (Int, Sex.Type) = {
+  def getInfo(id: String): (Int, Sex) = {
     val fields = "city,sex"
 
     val params = s"users.get?user_ids=$id&fields=$fields&v=$API_VERSION"
@@ -39,7 +39,7 @@ class SocialNetworkProvider {
 
     val jsonResponse = new JSONObject(content).getJSONArray("response").getJSONObject(0)
 
-    (jsonResponse.getInt("city"), Sex.get(jsonResponse.getInt("sex")))
+    (jsonResponse.getInt("city"), Sex(jsonResponse.getInt("sex")))
   }
 
   /**
@@ -51,7 +51,7 @@ class SocialNetworkProvider {
     * @param count количество
     * @return список id
     */
-  def search(city: Int, sex: Sex.Type, count: Int, offset: Int, token: String): List[String] = {
+  def search(city: Int, sex: Sex, count: Int, offset: Int, token: String): List[String] = {
 
     val isEnableExternalSearch = java.lang.Boolean.getBoolean("external-search-enable")
     if (!isEnableExternalSearch)

@@ -3,7 +3,7 @@ package ru.izebit.service
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import ru.izebit.dao.{AccountDao, SympathyDao}
-import ru.izebit.model.Relation.{CONNECT, LIKE, Type, VIEWED}
+import ru.izebit.model.RelationType.{CONNECTED, LIKE, VIEWED}
 import ru.izebit.model._
 
 
@@ -18,12 +18,12 @@ class AccountService {
   private var sympathyDao: SympathyDao = _
 
 
-  def getRelations(id: String, relationType: Type): List[String] =
+  def getRelations(id: String, relationType: RelationType): List[String] =
     accountDao.getAccount(id).relations
       .filter(relation => relation.relationType == relationType)
       .map(e => e.id)
 
-  def changeStatus(id: String, otherId: String, relationType: Type): Boolean = relationType match {
+  def changeStatus(id: String, otherId: String, relationType: RelationType): Boolean = relationType match {
     case LIKE =>
       val account = accountDao.getAccount(id)
       if (isDuplicate(account, otherId, relationType))
@@ -33,10 +33,10 @@ class AccountService {
 
       val relation = otherAccount.relations.find(r => r.relationType == LIKE && r.id == id)
       if (relation.isDefined) {
-        relation.get.relationType = CONNECT
+        relation.get.relationType = CONNECTED
         accountDao.insertAccount(otherAccount)
 
-        account.relations = Relation(otherId, CONNECT) :: account.relations
+        account.relations = Relation(otherId, CONNECTED) :: account.relations
       } else {
         account.relations = Relation(otherId, LIKE) :: account.relations
 
@@ -53,7 +53,7 @@ class AccountService {
       accountDao.insertAccount(account)
 
       true
-    case relationType@(VIEWED | CONNECT) =>
+    case relationType@(VIEWED | CONNECTED) =>
       val account = accountDao.getAccount(id)
       if (isDuplicate(account, otherId, relationType))
         return false
@@ -69,7 +69,7 @@ class AccountService {
         false
   }
 
-  def isDuplicate(account: Account, otherId: String, relationType: Relation.Type): Boolean = {
+  def isDuplicate(account: Account, otherId: String, relationType: RelationType): Boolean = {
     account.relations.exists(r => r.relationType == relationType && r.id == otherId)
   }
 
@@ -95,7 +95,7 @@ class AccountService {
     val account = accountDao.getAccount(id)
     val (ids, offset) = accountDao
       .getFromSearchTable(
-        getSearchTableName(account.city, Sex.getOpposite(account.sex)),
+        getSearchTableName(account.city, account.sex.opposite()),
         account.internalOffset,
         count - candidates.size)
     if (ids.isEmpty)
@@ -108,7 +108,7 @@ class AccountService {
       val externalCount = count - candidates.size
       //todo корявость
       val ids =
-        Option(socialNetworkProvider.search(account.city, Sex.getOpposite(account.sex), externalCount, account.externalOffset, token))
+        Option(socialNetworkProvider.search(account.city, account.sex.opposite(), externalCount, account.externalOffset, token))
           .getOrElse(List.empty)
 
       account.externalOffset = ids.size
@@ -142,7 +142,7 @@ class AccountService {
     }
   }
 
-  def getSearchTableName(city: Int, sex: Sex.Type): String = {
+  def getSearchTableName(city: Int, sex: Sex): String = {
     city + "-" + sex.name
   }
 }

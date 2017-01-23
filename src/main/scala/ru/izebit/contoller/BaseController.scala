@@ -3,7 +3,7 @@ package ru.izebit.contoller
 import org.json.{JSONArray, JSONObject}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation._
-import ru.izebit.model.Relation
+import ru.izebit.model.RelationType
 import ru.izebit.service.AccountService
 
 
@@ -49,7 +49,7 @@ class BaseController {
       response => {
         require(currentId != otherId)
 
-        val result = accountService.changeStatus(currentId, otherId, Relation.getType(relationNumber))
+        val result = accountService.changeStatus(currentId, otherId, RelationType.by(relationNumber))
         response.put("result", if (result) "ok" else "error")
       }
     )
@@ -62,7 +62,7 @@ class BaseController {
 
     responseWrapper(
       response => {
-        val result: List[String] = accountService.getRelations(currentId, Relation.getType(relationType))
+        val result: List[String] = accountService.getRelations(currentId, RelationType.by(relationType))
         val ids = result.foldRight(new JSONArray())((id, array) => array.put(id))
         response.put("result", "ok")
         response.put("account_ids", ids)

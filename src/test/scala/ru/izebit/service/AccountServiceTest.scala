@@ -10,7 +10,7 @@ import org.springframework.test.context.{ContextConfiguration, TestContextManage
 import ru.izebit.config.BaseConfiguration
 import ru.izebit.dao.{AccountDao, SympathyDao}
 import ru.izebit.model.{Account, Sex}
-import ru.izebit.model.Relation.{CONNECT, LIKE, VIEWED}
+import ru.izebit.model.RelationType.{CONNECTED, LIKE, VIEWED}
 import ru.izebit.model.Sex.{FEMALE, MALE}
 
 
@@ -318,14 +318,14 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     accountService.changeStatus(secondAcc.id, firstAcc.id, LIKE)
     relations = accountService.getRelations(firstAcc.id, LIKE)
     assert(relations.isEmpty)
-    relations = accountService.getRelations(firstAcc.id, CONNECT)
+    relations = accountService.getRelations(firstAcc.id, CONNECTED)
     assert(relations.size == 1)
     assert(relations.contains(secondAcc.id))
 
     sympathy = sympathyDao.get(firstAcc.id)
     assert(sympathy.lovers.isEmpty)
 
-    relations = accountService.getRelations(secondAcc.id, CONNECT)
+    relations = accountService.getRelations(secondAcc.id, CONNECTED)
     assert(relations.size == 1)
     assert(relations.contains(firstAcc.id))
   }
@@ -348,18 +348,18 @@ class AccountServiceTest extends FunSuite with MockitoSugar {
     accountService.changeStatus(firstAcc.id, secondAcc.id, VIEWED)
     var relations = accountService.getRelations(firstAcc.id, VIEWED)
     assert(relations.isEmpty)
-    accountService.changeStatus(firstAcc.id, firstAcc.id, CONNECT)
-    relations = accountService.getRelations(firstAcc.id, CONNECT)
+    accountService.changeStatus(firstAcc.id, firstAcc.id, CONNECTED)
+    relations = accountService.getRelations(firstAcc.id, CONNECTED)
     assert(relations.isEmpty)
 
     accountService.changeStatus(secondAcc.id, firstAcc.id, LIKE)
-    accountService.changeStatus(secondAcc.id, firstAcc.id, CONNECT)
-    relations = accountService.getRelations(secondAcc.id, CONNECT)
+    accountService.changeStatus(secondAcc.id, firstAcc.id, CONNECTED)
+    relations = accountService.getRelations(secondAcc.id, CONNECTED)
     assert(relations.size == 1)
     assert(relations.contains(firstAcc.id))
 
     accountService.changeStatus(secondAcc.id, firstAcc.id, VIEWED)
-    relations = accountService.getRelations(secondAcc.id, CONNECT)
+    relations = accountService.getRelations(secondAcc.id, CONNECTED)
     assert(relations.isEmpty)
     relations = accountService.getRelations(secondAcc.id, VIEWED)
     assert(relations.size == 1)

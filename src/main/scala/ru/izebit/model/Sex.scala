@@ -3,36 +3,23 @@ package ru.izebit.model
 /**
   * Created by Artem Konovalov on 8/28/16.
   */
+
+case class Sex(val name: String, val number: Int) {
+  override def equals(obj: Any): Boolean = obj match {
+    case obj: Sex => this.name == obj.name
+    case _ => false
+  }
+
+  def opposite(): Sex = Sex((this.number + 1) % 2)
+}
+
 object Sex {
 
-  trait Type {
-    val name: String
+  val FEMALE = new Sex("FEMALE", 1)
+  val MALE = new Sex("MALE", 2)
 
-
-    override def equals(obj: scala.Any): Boolean = obj match {
-      case x: Type => this.name == x.name
-      case _ => false
-    }
-  }
-
-  object MALE extends Type {
-    override val name = "male"
-  }
-
-  object FEMALE extends Type {
-    override val name = "female"
-  }
-
-
-  def get(order: Int) = order match {
-    case 1 => FEMALE
-    case 2 => MALE
-    case _ => throw new IllegalArgumentException
-  }
-
-
-  def getOpposite(sex: Type) = sex match {
-    case MALE => FEMALE
-    case FEMALE => MALE
+  def apply(number: Int): Sex = number match {
+    case FEMALE.number => FEMALE
+    case MALE.number => MALE
   }
 }

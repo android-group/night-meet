@@ -1,47 +1,38 @@
 package ru.izebit.model
 
-import ru.izebit.model.Relation.Type
-
 /**
   * Created by Artem Konovalov on 8/28/16.
   */
-case class Relation(id: String, var relationType: Type)
-
-object Relation {
-
-  trait Type {
-    val name: String
-
-    override def equals(obj: scala.Any): Boolean = obj match {
-      case x: Type => name == x.name
-      case _ => false
-    }
+case class Relation(id: String, var relationType: RelationType)
 
 
-    def prev() = this match {
-      case CONNECT => LIKE
-      case VIEWED => CONNECT
-      case LIKE => null
-    }
-  }
+object RelationType {
 
-  case object LIKE extends Type {
-    override val name: String = "like"
-  }
+  val LIKE = RelationType("like", 1)
+  val CONNECTED = RelationType("connected", 2)
+  val VIEWED = RelationType("viewed", 3)
 
-  case object CONNECT extends Type {
-    override val name: String = "connect"
-  }
 
-  case object VIEWED extends Type {
-    override val name: String = "viewed"
-  }
-
-  def getType(relationType: Int): Type = relationType match {
-    case 1 => LIKE
-    case 2 => CONNECT
-    case 3 => VIEWED
+  def by(relationType: Int): RelationType = relationType match {
+    case LIKE.number => LIKE
+    case CONNECTED.number => CONNECTED
+    case VIEWED.number => VIEWED
     case _ => throw new IllegalArgumentException(s"$relationType is not valid value")
   }
+}
 
+case class RelationType(name: String, number: Int) {
+
+  import ru.izebit.model.RelationType.{CONNECTED, LIKE, VIEWED}
+
+  def prev():RelationType = this match {
+    case CONNECTED => LIKE
+    case VIEWED => CONNECTED
+    case LIKE => null
+  }
+
+  override def equals(obj: Any): Boolean = obj match {
+    case x: RelationType => this.name == x.name
+    case _ => false
+  }
 }
