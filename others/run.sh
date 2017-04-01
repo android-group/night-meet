@@ -21,12 +21,13 @@ if [ ! -d ${mongo_db_directory} ]
     then
         echo "create directory $mongo_db_directory"
         mkdir ${mongo_db_directory}
+        chmod -R 777 ${mongo_db_directory}
 fi
-if [ -f ${mongo_log_file} ]
-    then
-        echo "delete $mongo_log_file"
-        rm ${mongo_log_file}
-fi
+
+touch ${mongo_log_file}
+chmod 777 ${mongo_log_file}
+echo "create $mongo_log_file"
+echo "" > ${mongo_log_file}
 
 
 #run mongo
