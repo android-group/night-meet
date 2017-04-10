@@ -43,17 +43,6 @@
    </tr>
 </table>
 
-### Установка приложения:
-1) sbt поставь
-2) он собирает scala
-3) потом выполняешь
-sbt package
-4) соберется jar
-5) делаешь сервис, запускаешь java -jar
-6) Скрипт для запуска mongadb:
-https://github.com/android-group/night-meet/blob/master/others/run.sh
-7) запускать его следует первый раз под рутом
-потому что он ставит монгу если ее нет, а для этого нужны права
 
 ### Дополнения:
  
@@ -71,6 +60,19 @@ https://github.com/android-group/night-meet/blob/master/others/run.sh
        "description":"описание ошибки"
   }
  ```
+ 
+ 
+## Установка приложения:
+### Docker 
+
+сборка 
+
+> docker build -t night-meet .
+
+запуск
+
+> docker run  -p 8080:8888 -v /<директория с базой монги>:/opt/mongo night-meet
+
 
    
 
