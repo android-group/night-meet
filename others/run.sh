@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mongo_port="27017"
+mongo_port=27017
 mongo_db_directory="/opt/mongo/mongo.db"
 mongo_log_file="/opt/mongo/mongo.log"
 artifact_name="night-meet.jar"
@@ -18,6 +18,7 @@ fi
 echo "run mongo on port: ${mongo_port}"
 mongod  --dbpath ${mongo_db_directory} --port ${mongo_port} --logpath ${mongo_log_file} &
 
+#run application
 java -jar ../target/scala-2.11/${artifact_name}
 
 
