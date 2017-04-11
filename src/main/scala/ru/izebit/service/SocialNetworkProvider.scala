@@ -39,7 +39,7 @@ class SocialNetworkProvider {
 
     val jsonResponse = new JSONObject(content).getJSONArray("response").getJSONObject(0)
 
-    (jsonResponse.getInt("city"), Sex(jsonResponse.getInt("sex")))
+    (jsonResponse.getJSONObject("city").getInt("id"), Sex(jsonResponse.getInt("sex")))
   }
 
   /**
