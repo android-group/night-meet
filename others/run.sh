@@ -16,7 +16,7 @@ fi
 
 #run mongo
 echo "run mongo on port: ${mongo_port}"
-mongod  --dbpath ${mongo_db_directory} --port ${mongo_port} --logpath ${mongo_log_file} &
+mongod --fork --dbpath ${mongo_db_directory} --port ${mongo_port} --logpath ${mongo_log_file} 
 
 #run application
 java -jar ../target/scala-2.11/${artifact_name}
